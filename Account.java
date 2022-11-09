@@ -5,6 +5,7 @@ public class Account {
     private Rocket rocket;
     private int accountBalance = 0;
     private int record;
+
     public Account(){
         this.rocket = Rocket.getInstance();
         this.accountBalance = 0;
@@ -34,4 +35,5 @@ public class Account {
     public void setRecord(int record) {
         this.record = record;
     }
+
 }
