@@ -14,7 +14,7 @@ public class MapGenerator {
         return mapGenerator;
     }
 
-    public String[] newMap(){
+    public void newMap(){
         this.n = 0;
         this.map = new String[Game.MAX_HEIGHT];
         String temp = null;
@@ -23,7 +23,7 @@ public class MapGenerator {
         for(i=0 ; i<Game.MAX_HEIGHT; i++)
         {
             temp = "";
-            for(int j=0 ; j<Menu.frameWidth-Menu.frameWidthMenu; j++){
+            for(int j=0 ; j<Menu.frameWidth; j++){
                 int randNum = rand.nextInt(1000);
                 switch (randNum){
                     case 0,1,2,3,4:{
@@ -38,7 +38,9 @@ public class MapGenerator {
             }
             this.map[i] = temp;
         }
-        return this.map;
+        for(i=0 ; i<Menu.frameHeight; i++){
+            this.frame[i]=this.map[i];
+        }
     }
 
     public String[] getFrame(){
@@ -46,6 +48,10 @@ public class MapGenerator {
         for(int i=n ; i<Menu.frameHeight+n; i++){
             this.frame[i-n] = this.map[i];
         }
+        return this.frame;
+    }
+
+    public String []getCurFrame(){
         return this.frame;
     }
 
