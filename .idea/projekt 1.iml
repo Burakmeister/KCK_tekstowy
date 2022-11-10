@@ -16,5 +16,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="lanterna-3.0.01" level="application" />
   </component>
 </module>
