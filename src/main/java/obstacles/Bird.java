@@ -5,8 +5,8 @@ import src.main.resources.Arts;
 
 public class Bird extends Obstacle{
     private float damage = 0.1f;
-    public Bird(float moving){
-        super(Arts.BIRD.art[0].length(), Arts.BIRD.art.length, moving, false, false);
+    public Bird(float moving, int x, int y){
+        super(Arts.BIRD.art[0].length(), Arts.BIRD.art.length, x, y, moving, false, false);
     }
 
     @Override

@@ -1,5 +1,12 @@
 package src.main.java;
 
+import com.googlecode.lanterna.graphics.TextGraphics;
+import src.main.java.obstacles.*;
+import src.main.java.pieces.Rocket;
+import src.main.resources.Arts;
+
+import java.awt.font.GlyphMetrics;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class MapGenerator {
@@ -26,14 +33,48 @@ public class MapGenerator {
         {
             temp = "";
             for(int j=0 ; j<Menu.frameWidth; j++){
-                int randNum = rand.nextInt(1000);
+                int randNum = rand.nextInt(4000);
                 switch (randNum){
-                    case 0,1,2,3,4:{
-                        temp+='*';
+                    case 500, 501, 502:{
+                        if(randNum == 500)
+                            Game.getObstacles().add(new Cloud(Arts.CLOUD1, j,i));
+                        else if(randNum == 501)
+                            Game.getObstacles().add(new Cloud(Arts.CLOUD2, j,i));
+                        else{
+                            Game.getObstacles().add(new Cloud(Arts.CLOUD3, j,i));
+                        }
+                        temp+=' ';
+                        continue;
+                    }
+                    case 700,701:{
+                        int r = rand.nextInt(4);
+                        if(r==0){
+                            Game.getObstacles().add(new Plane(Arts.PLANE, j, i, rand.nextFloat(1)-1, 0.2f));
+                        }else if(r==1){
+                            Game.getObstacles().add(new Plane(Arts.HELICOPTER, j, i, rand.nextFloat(1), 0.15f));
+                        }else if(r==2){
+                            Game.getObstacles().add(new Plane(Arts.FAST_PLANE, j, i, rand.nextFloat(1), 0.3f));
+                        }else{
+                            Game.getObstacles().add(new Plane(Arts.AEROSLAT, j, i, rand.nextFloat(1)-1, 0.1f));
+                        }
+                        temp+=' ';
+                        continue;
+                    }
+                    case 600:{
+                        Game.getObstacles().add(new Ufo(j,i, rand.nextFloat(1)-0.5f, 0.5f));
+                        temp+=' ';
+                        continue;
+                    }
+                    case 1600, 9000, 900:{
+                        Game.getObstacles().add(new Bird(rand.nextFloat(2)-1, j, i));
+                        temp+=' ';
                         continue;
                     }
                     default:{
-                        temp+=' ';
+                        if(randNum<30){
+                            temp+='*';
+                        }else
+                            temp+=' ';
                         continue;
                     }
                 }
@@ -45,7 +86,7 @@ public class MapGenerator {
         }
     }
 
-    public String[] getFrame(){
+    public String[] getFrame(TextGraphics tg){
         this.n++;
         for(int i=n ; i<Menu.frameHeight+n; i++){
             this.frame[i-n] = this.map[i];
@@ -59,5 +100,12 @@ public class MapGenerator {
 
     public int getN() {
         return n;
+    }
+
+    public void setN(int n) {
+        this.n = n;
+    }
+
+    public static void checkColisions(Rocket rocket){
     }
 }
