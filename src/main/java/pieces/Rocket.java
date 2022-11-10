@@ -16,6 +16,7 @@ public class Rocket implements Serializable {
     private float oilStatus = 1;
     private float height = 0;
     private float healthStatus = 1;
+    private float damages = 0;
 
     private Boolean mapIsVisible = true;
 
@@ -98,6 +99,10 @@ public class Rocket implements Serializable {
             setAccountBalance(getAccountBalance()-this.repairKitEfficacy*100);
             this.repairKitEfficacy++;
         }
+    }
+
+    public float getDamages(){
+        return this.damages;
     }
 
     public float getHealthStatus() {

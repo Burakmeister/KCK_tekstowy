@@ -15,9 +15,9 @@ import java.nio.charset.StandardCharsets;
 
 
 public class Menu {
-    public static int frameWidth = 100;    //120  50
-    public static int frameHeight = 33;    //50  50
-    public static int frameWidthMenu = 20;
+    public static final int frameWidth = 100;    //120  50
+    public static final int frameHeight = 33;    //50  50
+    public static final int frameWidthMenu = 20;
     public static Font font = new Font("Courier New", Font.BOLD, 25);
 
     public static TextColor lighterBlue = new TextColor.RGB(150,150,255),

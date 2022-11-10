@@ -1,5 +1,6 @@
 package src.main.java;
 
+import src.main.java.obstacles.*;
 import src.main.java.pieces.Rocket;
 import src.main.resources.Arts;
 import com.googlecode.lanterna.Symbols;
@@ -11,6 +12,8 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.screen.Screen;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Random;
 
 
 public class Game{
@@ -32,6 +35,7 @@ public class Game{
     private String [][]rocketArt = {Arts.ROCKET_BASE.art, Arts.ROCKET_FAST.art};
 
     private MapGenerator mg = MapGenerator.getInstance();
+    private static ArrayList<Obstacle> obstacles = new ArrayList<>();
     private Rocket rocket = Rocket.getInstance();
     public static final int MAX_HEIGHT = 2000;
 
@@ -89,10 +93,48 @@ public class Game{
     }
 
     private void printMap() throws IOException {
-        int i=Menu.frameHeight-1;
-        for(String str: mg.getFrame()){
-            tg.putString(0,i,str);
-            i--;
+        int j=Menu.frameHeight-1;
+        for(String str: mg.getFrame(tg)){
+            tg.putString(0,j,str);
+            j--;
+        }
+        int n = mg.getN();
+        for (Obstacle o: obstacles){
+            if(o.getY()<n) {
+                if(!o.isENED())
+                {
+                    o.n();
+                    o.setY(o.getY()-n);
+                }
+                if (o instanceof Bird) {
+                    tg.putString(o.getX(), o.getY(), Arts.BIRD.art[0]);
+                } else if (o instanceof Cloud) {
+                    Cloud c = (Cloud) o;
+                    for (int i = c.getArt().art.length-1; i>=0; i--)
+                        tg.putString(c.getX(), c.getY()+i, c.getArt().art[i]);
+                } else if (o instanceof Plane) {
+                    Plane c = (Plane) o;
+                    for (int i = c.getArt().art.length-1; i>=0; i--)
+                        tg.putString(c.getX(), c.getY()+i, c.getArt().art[i]);
+                } else if (o instanceof Ufo) {
+                    Ufo u = (Ufo) o;
+                    for (int i = Arts.UFO.art.length-1; i>=0; i--) {
+                        tg.putString(u.getX(), u.getY()+i, Arts.UFO.art[i]);
+                    }
+                }//+-n idk
+                o.setY(o.getY()+1);
+            }
+            if(o.getX()>Menu.frameWidth || o.getX()<0 || (o.getY()>Menu.frameHeight && o.isENED())){
+                o.setToRemove();
+            }
+        }
+        for(int m=0; m<obstacles.size(); m++){
+            if(obstacles.get(m).isToRemove()){
+                obstacles.remove(m);
+                m--;
+            }else{
+                break;
+            }
         }
         screen.refresh();
     }
@@ -127,7 +169,7 @@ public class Game{
                 } else {
                     printMap();
                 }
-                this.printStatus();
+                this.printStatus(v);
                 this.rocket.setHeight((float) v / (float) MAX_HEIGHT);
                 this.rocket.setOilStatus((float) (this.rocket.getOilStatus() - 0.005));
                 v++;
@@ -244,8 +286,8 @@ public class Game{
         }
     }
 
-    private void printStatus(){
-        String[] stats={"Fuel", "Booster", "Height", "Speed"};
+    private void printStatus(int v){
+        String[] stats={"Fuel", "Damage", "Height", "Speed"};
         tg.setBackgroundColor(white);
         tg.setForegroundColor(black);
         tg.fillRectangle(new TerminalPosition(Menu.frameWidth-Menu.frameWidthMenu, Menu.frameHeight-Menu.frameWidthMenu/2),
@@ -266,6 +308,7 @@ public class Game{
         }
         tg.setBackgroundColor(black);
         tg.setForegroundColor(white);
+
         for(int i=0; i<stats.length-1; i++) {
             for(int j=0 ; j<Menu.frameWidthMenu-2; j++){
                 tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 1 + j,
@@ -280,13 +323,30 @@ public class Game{
                     Menu.frameHeight- (Menu.frameWidthMenu/2 * 1 / (stats.length + 1))) , Symbols.BLOCK_DENSE);
         }
 
+        int damages = (int) ((rocket.getDamages())*(Menu.frameWidthMenu-2));
+        for(int j=0 ; j<damages; j++){
+            tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 1 + j,
+                    Menu.frameHeight- (Menu.frameWidthMenu/2 * 2 / (stats.length + 1))) , Symbols.BLOCK_DENSE);
+        }
+
         int height = (int) ((rocket.getHeight())*(Menu.frameWidthMenu-2));
         for(int j=0 ; j<height; j++){
             tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 1 + j,
                     Menu.frameHeight- (Menu.frameWidthMenu/2 * 3 / (stats.length + 1))) , Symbols.BLOCK_DENSE);
         }
-                    tg.putString(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 1,
-                    Menu.frameHeight- (Menu.frameWidthMenu/2 * stats.length / (stats.length + 1))) , String.valueOf(rocket.getSpeed()) + "m/s");
+
+        if(v < base.length){
+            rocket.setSpeed(rocket.getSpeed()+3);
+        }else{
+            Random rand = new Random();
+            rocket.setSpeed(rand.nextInt(3)+115);
+        }
+        tg.putString(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 1,
+                    Menu.frameHeight- (Menu.frameWidthMenu/2 * stats.length / (stats.length + 1))) , String.valueOf(rocket.getSpeed() + "m/s"));
+
+    }
+    public static ArrayList<Obstacle> getObstacles() {
+        return obstacles;
     }
 }
 

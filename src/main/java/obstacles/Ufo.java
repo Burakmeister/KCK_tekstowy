@@ -5,8 +5,8 @@ import src.main.resources.Arts;
 
 public class Ufo extends Obstacle{
     private float damage;
-    public Ufo(float moving, float damage){
-        super(Arts.UFO.art[0].length(), Arts.UFO.art.length, moving, false, false);
+    public Ufo(int x, int y, float moving, float damage){
+        super(Arts.UFO.art[0].length(), Arts.UFO.art.length, x, y, moving, false, false);
         this.damage = damage;
     }
     @Override
