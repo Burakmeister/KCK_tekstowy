@@ -20,25 +20,23 @@ public class Game{
     static public boolean paused;
     static public boolean gameover;
 
-    private final TextColor blue  = new TextColor.RGB(50,50,255);
-    private TextColor darkBlue = new TextColor.RGB(20,20,100);
-    private TextColor gray = TextColor.Factory.fromString("white");
-    private TextColor white = new TextColor.RGB(255,255,255);
-    private TextColor black = new TextColor.RGB(0,0,0);
+    private final TextColor gray = TextColor.Factory.fromString("white");
+    private final TextColor white = new TextColor.RGB(255,255,255);
+    private final TextColor black = new TextColor.RGB(0,0,0);
 
-    private TextGraphics tg;
-    private Screen screen;
+    private final TextGraphics tg;
+    private final Screen screen;
 
-    private String []base = Arts.BASE.art;
-    private String [][]rocketArt = {Arts.ROCKET_BASE.art, Arts.ROCKET_FAST.art};
+    private final String []base = Arts.BASE.art;
+    private final String [][]rocketArt = {Arts.ROCKET_BASE.art, Arts.ROCKET_FAST.art};
 
-    private MapGenerator mg = MapGenerator.getInstance();
-    private static ArrayList<Obstacle> obstacles = new ArrayList<>();
-    private static ArrayList<Bullet> rocketBullets = new ArrayList<>();
-    private ArrayList<Bullet> ufoBullets = new ArrayList<>();
+    private final MapGenerator mg = MapGenerator.getInstance();
+    private static final ArrayList<Obstacle> obstacles = new ArrayList<>();
+    private static final ArrayList<Bullet> rocketBullets = new ArrayList<>();
+    private final ArrayList<Bullet> ufoBullets = new ArrayList<>();
     private static int toNextBullet = 15;   //0 - has bullet
 
-    private Rocket rocket = Rocket.getInstance();
+    private final Rocket rocket = Rocket.getInstance();
     public static final int MAX_HEIGHT = 2000;
 
     public Game(Screen screen) throws IOException, InterruptedException {
@@ -56,10 +54,7 @@ public class Game{
         while(!gameover) {
             KeyStroke key = screen.readInput();
             switch (key.getKeyType()) {
-                case ArrowUp -> {
-                    this.start();
-                    break;
-                }
+                case ArrowUp -> this.start();
                 case Tab -> {
                     this.shop();
                     this.tg.setBackgroundColor(black);
@@ -67,7 +62,6 @@ public class Game{
                     this.screen.clear();
                     this.printBase(0);
                     this.printRocket(Arts.ROCKET_BASE, this.rocket.getColumn());
-                    break;
                 }
                 case Escape -> {
                     return;
@@ -136,9 +130,9 @@ public class Game{
         }
     }
 
-    private void printMap() throws IOException {
+    private void printMap() {
         int j=Menu.frameHeight-1;
-        for(String str: mg.getFrame(tg)){
+        for(String str: mg.getFrame()){
             tg.putString(0,j,str);
             j--;
         }
@@ -153,18 +147,15 @@ public class Game{
                 if (o instanceof Bird) {
                     o.setX(o.getX()+o.getMoving());
                     tg.putString((int)o.getX(), o.getY(), Arts.BIRD.art[0]);
-                } else if (o instanceof Cloud) {
-                    Cloud c = (Cloud) o;
+                } else if (o instanceof Cloud c) {
                     for (int i = c.getArt().art.length-1; i>=0; i--)
                         tg.putString((int)c.getX(), c.getY()+i, c.getArt().art[i]);
-                } else if (o instanceof Plane) {
+                } else if (o instanceof Plane c) {
                     o.setX(o.getX()+o.getMoving());
-                    Plane c = (Plane) o;
                     for (int i = c.getArt().art.length-1; i>=0; i--)
                         tg.putString((int)c.getX(), c.getY()+i, c.getArt().art[i]);
-                } else if (o instanceof Ufo) {
+                } else if (o instanceof Ufo u) {
                     o.setX(o.getX()+o.getMoving());
-                    Ufo u = (Ufo) o;
                     for (int i = Arts.UFO.art.length-1; i>=0; i--) {
                         tg.putString((int)u.getX(), u.getY()+i, Arts.UFO.art[i]);
                     }
@@ -175,7 +166,7 @@ public class Game{
                     o.setToRemove();
                 }
             }
-            if(!o.isTransparent())
+            if(o.isTransparent())
                 for (Bullet b : rocketBullets) {
                     if (    b.getY() >= o.getX() &&
                             b.getY() <= o.getX() + o.getArt().art[0].length() &&
@@ -207,7 +198,7 @@ public class Game{
         }
     }
 
-    private void printBase(int v) throws IOException {
+    private void printBase(int v) {
         int i = Menu.frameHeight-base.length+v;
         for (String s: base) {
             this.tg.putString(0,i,s);
@@ -225,7 +216,7 @@ public class Game{
         gameover = false;
         paused = false;
         mg.newMap();
-        MoveHadler mh = new MoveHadler(screen, rocket, tg);
+        MoveHadler mh = new MoveHadler(screen, rocket);
         mh.start();
         int v=0;
         while(!gameover) {
@@ -247,11 +238,11 @@ public class Game{
                     gameover=true;
                 }
                 if(Game.getToNextBullet()>=0)
-                    Game.setToNextBullet(Game.getToNextBullet()-1*rocket.getRateOfFire());
+                    Game.setToNextBullet(Game.getToNextBullet()- rocket.getRateOfFire());
             }else{
                 mh.setFlag();
                 this.pause();
-                mh = new MoveHadler(screen, rocket, tg);
+                mh = new MoveHadler(screen, rocket);
                 mh.start();
             }
         }
@@ -261,7 +252,9 @@ public class Game{
         }
         int points = 0;
         if(v > rocket.getRecord()){
-            points+=v;
+            points+=rocket.getRecord()/2;
+            points+=v-rocket.getRecord();
+            rocket.setRecord(v);
         }else{
             points+=v/2;
         }
@@ -270,12 +263,9 @@ public class Game{
         rocket.setOilStatus(1);
         rocket.setHealthStatus(1);
         rocket.setSpeed(0);
-        if(rocket.getRecord()<v){
-            rocket.setRecord(v);
-        }
     }
 
-    private void pause() throws IOException, InterruptedException {
+    private void pause() throws IOException {
         tg.setBackgroundColor(white);
         tg.setForegroundColor(black);
         TerminalSize ts = new TerminalSize(2*Menu.frameWidthMenu, Menu.frameWidthMenu);
@@ -296,21 +286,17 @@ public class Game{
                     paused = false;
                     return;
                 }
-                case ArrowUp -> {
-                    numOption--;
-                }
-                case ArrowDown -> {
-                    numOption++;
-                }
+                case ArrowUp -> numOption--;
+                case ArrowDown -> numOption++;
                 case Enter -> {
-                    switch (numOption){
-                        case 0:{
+                    switch (numOption) {
+                        case 0 -> {
                             tg.setBackgroundColor(black);
                             tg.setForegroundColor(white);
                             paused = false;
                             return;
                         }
-                        case 1:{
+                        case 1 -> {
                             gameover = true;
                             return;
                         }
@@ -338,7 +324,7 @@ public class Game{
         tg.drawRectangle(tp, ts, ' ');
         Menu.paintBorder(tg, tp, ts);
         int numOption = 0;
-        String shopOpts[] = {"Bak paliwa", "Siła ognia", "Pancerz", "Szybkostrzelność"};
+        String[] shopOpts = {"Bak paliwa", "Siła ognia", "Pancerz", "Szybkostrzelność"};
         while(true){
             Menu.paintMenuOptions(tg, shopOpts, numOption, Menu.frameHeight, -2, (Menu.frameWidth-Menu.frameWidthMenu)/2,  black, gray);
             tg.setForegroundColor(white);
@@ -364,46 +350,29 @@ public class Game{
                 tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 5 + j,
                         4*Menu.frameHeight/5), Symbols.BLOCK_DENSE);
             }
-            String tmp="";
-            for(int i=0; i<String.valueOf(rocket.getAccountBalance()).length()+1;i++){
-                tmp+=" ";
-            }
+            String tmp = " ".repeat(Math.max(0, String.valueOf(rocket.getAccountBalance()).length() + 3));
             tg.putString(new TerminalPosition((Menu.frameWidth - Menu.frameWidthMenu/2 - String.valueOf(rocket.getAccountBalance()).length()/3+2),
                     (Menu.frameHeight- 2)), tmp);
             tg.putString(new TerminalPosition((Menu.frameWidth - Menu.frameWidthMenu/2 - String.valueOf(rocket.getAccountBalance()).length()/3+3),
-                    (Menu.frameHeight- 2)), String.valueOf(rocket.getAccountBalance())+"$");
+                    (Menu.frameHeight- 2)), rocket.getAccountBalance() +"$");
             screen.refresh();
             KeyStroke ks = screen.readInput();
             switch (ks.getKeyType()){
-                case ArrowDown -> {
-                    numOption++;
-                    break;
-                }
-                case ArrowUp -> {
-                    numOption--;
-                    break;
-                }
+                case ArrowDown -> numOption++;
+                case ArrowUp -> numOption--;
                 case Tab -> {
                     return;
                 }
                 case Enter -> {
-                    switch (numOption){
-                        case 0:{    //paliwo
-                            rocket.plusOneTankCapacity();
-                            break;
-                        }
-                        case 1:{    //siła ognia
-                            rocket.plusOneFirepower();
-                            break;
-                        }
-                        case 2:{    //pancerz
-                            rocket.plusOneArmor();
-                            break;
-                        }
-                        case 3: {   //szybkostrzelnosc
-                            rocket.plusOneRateOfFire();
-                            break;
-                        }
+                    switch (numOption) {
+                        case 0 -> //paliwo
+                                rocket.plusOneTankCapacity();
+                        case 1 -> //siła ognia
+                                rocket.plusOneFirepower();
+                        case 2 -> //pancerz
+                                rocket.plusOneArmor();
+                        case 3 -> //szybkostrzelnosc
+                                rocket.plusOneRateOfFire();
                     }
                 }
             }
@@ -452,11 +421,11 @@ public class Game{
         int fuel = (int) ((rocket.getOilStatus())*(Menu.frameWidthMenu-2));
         for(int j=0 ; j<fuel; j++){
             tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 1 + j,
-                    Menu.frameHeight- (Menu.frameWidthMenu/2 * 1 / (stats.length + 1))) , Symbols.BLOCK_DENSE);
+                    Menu.frameHeight- (Menu.frameWidthMenu / 2 / (stats.length + 1))) , Symbols.BLOCK_DENSE);
         }
 
         tg.putString(new TerminalPosition((Menu.frameWidth - Menu.frameWidthMenu/2 - String.valueOf(rocket.getAccountBalance()).length()/3+2),
-                (Menu.frameHeight- Menu.frameWidthMenu/2 + 2)), String.valueOf(rocket.getAccountBalance())+"$");
+                (Menu.frameHeight- Menu.frameWidthMenu/2 + 2)), rocket.getAccountBalance() +"$");
 
         int damages = (int) ((rocket.getHealthStatus())*(Menu.frameWidthMenu-2));
         for(int j=0 ; j<damages; j++){
@@ -477,7 +446,7 @@ public class Game{
             rocket.setSpeed(rand.nextInt(3)+115);
         }
         tg.putString(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 1,
-                    Menu.frameHeight- (Menu.frameWidthMenu/2 * stats.length / (stats.length + 1))) , String.valueOf(rocket.getSpeed() + "m/s"));
+                    Menu.frameHeight- (Menu.frameWidthMenu/2 * stats.length / (stats.length + 1))) , rocket.getSpeed() + "m/s");
 
     }
     public static ArrayList<Obstacle> getObstacles() {
@@ -491,19 +460,17 @@ public class Game{
 
     private void shotUfo(Obstacle o){
         Random rand = new Random();
-        switch(rand.nextInt(3)){
-            case 0:{
-                this.ufoBullets.add(new Bullet( o.getY()+o.getArt().art.length/2, (int)o.getX()+o.getArt().art[0].length()/2));
-            }
+        if (rand.nextInt(3) == 0) {
+            this.ufoBullets.add(new Bullet(o.getY() + o.getArt().art.length / 2, (int) o.getX() + o.getArt().art[0].length() / 2));
         }
     }
 }
 
 class MoveHadler extends Thread{
-    private Screen screen;
-    private Rocket rocket;
-    private boolean flag = false;
-    public MoveHadler(Screen screen, Rocket rocket, TextGraphics tg){
+    private final Screen screen;
+    private final Rocket rocket;
+    private boolean flag;
+    public MoveHadler(Screen screen, Rocket rocket){
         this.screen = screen;
         this.rocket = rocket;
         this.flag = false;
@@ -518,24 +485,18 @@ class MoveHadler extends Thread{
                     case ArrowLeft -> {
                         if(rocket.getColumn()>=0)
                             rocket.setColumn(rocket.getColumn() - 1);
-                        break;
                     }
                     case ArrowRight -> {
                             if(rocket.getColumn() < Menu.frameWidth-Menu.frameWidthMenu*1.5+1)
                             rocket.setColumn(rocket.getColumn() + 1);
-                        break;
                     }
                     case ArrowUp -> {
                         if(Game.getToNextBullet()<=0){
                             Game.shotRocket(rocket);
                             Game.setToNextBullet(15);
                         }
-                        break;
                     }
-                    case Escape -> {
-                        Game.paused = true;
-                        break;
-                    }
+                    case Escape -> Game.paused = true;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -551,8 +512,8 @@ class MoveHadler extends Thread{
 }
 
 class Bullet{
-    private int x, y;
-    private char art = '|';
+    private int x;
+    private final int y;
     private boolean toRemove = false;
     public Bullet(int x, int y){
         this.x = x;
@@ -572,7 +533,7 @@ class Bullet{
     }
 
     public char getArt() {
-        return art;
+        return '|';
     }
 
     public boolean isToRemove() {

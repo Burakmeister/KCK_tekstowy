@@ -42,8 +42,6 @@ public enum Arts {
             " /|/\\|\\ \n" ,
             "/_||||_\\\n",
             " (|)(|)  "}),
-    ROCKET_1(new String[]{}),
-    ROCKET_2(new String[]{}),
     ROCKET_BASE(new String[]{
             "   /\\\n",
             "  (  )===\n" ,
@@ -114,8 +112,8 @@ public enum Arts {
     });
 
 
-    public String[] art;
-    private Arts(String[] art){
+    public final String[] art;
+    Arts(String[] art){
         this.art = art;
     }
 }

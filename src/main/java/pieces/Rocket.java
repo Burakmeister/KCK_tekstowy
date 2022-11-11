@@ -1,9 +1,5 @@
 package src.main.java.pieces;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 public class Rocket{
     private static Rocket rocket = new Rocket();
 

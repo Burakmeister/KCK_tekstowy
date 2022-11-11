@@ -17,7 +17,4 @@ public class Cloud extends Obstacle{
         return art;
     }
 
-    public void setArt(Arts art) {
-        this.art = art;
-    }
 }

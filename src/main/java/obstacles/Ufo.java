@@ -4,7 +4,7 @@ import src.main.java.pieces.Rocket;
 import src.main.resources.Arts;
 
 public class Ufo extends Obstacle{
-    private float damage;
+    private final float damage;
     public Ufo(int x, int y, float moving, float damage){
         super(Arts.UFO.art[0].length(), Arts.UFO.art.length, x, y, moving, false, false,10, Arts.UFO);
         this.damage = damage;

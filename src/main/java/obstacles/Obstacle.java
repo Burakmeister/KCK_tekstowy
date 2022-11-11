@@ -45,44 +45,12 @@ public abstract class Obstacle {
         this.y = y;
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
     public float getMoving() {
         return moving;
     }
 
-    public void setMoving(float moving) {
-        this.moving = moving;
-    }
-
     public boolean isTransparent() {
-        return isTransparent;
-    }
-
-    public void setTransparent(boolean transparent) {
-        isTransparent = transparent;
-    }
-
-    public boolean isHaveAttack() {
-        return haveAttack;
-    }
-
-    public void setHaveAttack(boolean haveAttack) {
-        this.haveAttack = haveAttack;
+        return !isTransparent;
     }
 
     public Boolean isENED(){

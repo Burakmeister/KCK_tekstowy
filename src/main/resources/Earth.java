@@ -512,9 +512,9 @@ public enum Earth {
             "                                   ./ooo+:-.:::::::::/+yo+ooyso/.                                   \n" ,
             "                                        `-:+osyhhhhhhyso+/-`                                        \n"});
 
-    public String[] art;
+    public final String[] art;
 
-    private Earth(String[] art){
+    Earth(String[] art){
         this.art=art;
     }
 }

@@ -27,7 +27,7 @@ public class Menu {
     private static DefaultTerminalFactory terminal;
     private static Screen screen;
 
-    private TextGraphics tg;
+    private final TextGraphics tg;
 
 
     public Menu(boolean options) throws IOException {
@@ -45,7 +45,7 @@ public class Menu {
                     this.paintMenu();
                     this.paintLogo();
                 }
-                this.paintMenuOptions(tg, menuOptions, numOption, Menu.frameHeight,0, 0,lighterBlue, lightBlue);
+                paintMenuOptions(tg, menuOptions, numOption, Menu.frameHeight,0, 0,lighterBlue, lightBlue);
                 KeyStroke key = screen.readInput();
                 switch (key.getKeyType()){
                     case ArrowUp -> numOption--;
@@ -76,7 +76,7 @@ public class Menu {
                                 new AnimatedEarth().start();
                                 Thread.sleep(3100);
                                 this.paintMenu();
-                                this.paintMenuOptions(tg, menuOptions, numOption, Menu.frameHeight,0, 0,lighterBlue, lightBlue);
+                                paintMenuOptions(tg, menuOptions, numOption, Menu.frameHeight,0, 0,lighterBlue, lightBlue);
                                 this.paintLogo();
                                 break;
                             case 5:
@@ -90,10 +90,7 @@ public class Menu {
                 }else if(numOption >= menuOptions.length){
                     numOption = 2;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(0);
-            } catch (InterruptedException e){
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
                 System.exit(0);
             }
