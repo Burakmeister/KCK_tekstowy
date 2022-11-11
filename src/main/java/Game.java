@@ -225,7 +225,7 @@ public class Game{
         gameover = false;
         paused = false;
         mg.newMap();
-        Thread mh = new MoveHadler(screen, rocket, tg);
+        MoveHadler mh = new MoveHadler(screen, rocket, tg);
         mh.start();
         int v=0;
         while(!gameover) {
@@ -249,10 +249,13 @@ public class Game{
                 if(Game.getToNextBullet()>=0)
                     Game.setToNextBullet(Game.getToNextBullet()-1*rocket.getRateOfFire());
             }else{
+                mh.setFlag();
                 this.pause();
-                new MoveHadler(screen, rocket, tg).start();
+                mh = new MoveHadler(screen, rocket, tg);
+                mh.start();
             }
         }
+        mh.setFlag();
         if(v==MAX_HEIGHT){
             Rocket.newInstance();
         }
@@ -280,7 +283,7 @@ public class Game{
         tg.fillRectangle(tp, ts, ' ');
         Menu.paintBorder(tg, tp, ts);
         int numOption = 0;
-        String []options = new String []{"Wznów", "Menu głowne"};
+        String []options = new String []{"Wznów", "Restart"};
         screen.refresh();
         while(true){
             Menu.paintMenuOptions(tg, options, numOption, Menu.frameWidthMenu,
@@ -499,9 +502,11 @@ public class Game{
 class MoveHadler extends Thread{
     private Screen screen;
     private Rocket rocket;
+    private boolean flag = false;
     public MoveHadler(Screen screen, Rocket rocket, TextGraphics tg){
         this.screen = screen;
         this.rocket = rocket;
+        this.flag = false;
         setDaemon(true);
     }
     @Override
@@ -535,7 +540,13 @@ class MoveHadler extends Thread{
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            if(flag){
+                break;
+            }
         }
+    }
+    public void setFlag(){
+        this.flag = true;
     }
 }
 

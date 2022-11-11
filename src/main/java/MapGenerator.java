@@ -33,45 +33,57 @@ public class MapGenerator {
         {
             temp = "";
             for(int j=0 ; j<Menu.frameWidth; j++){
-                int randNum = rand.nextInt(7000);
+                int randNum = rand.nextInt(10000);
                 switch (randNum){
-                    case 500, 501, 502:{
-                        if(randNum == 500)
-                            Game.getObstacles().add(new Cloud(Arts.CLOUD1, j,i));
-                        else if(randNum == 501)
-                            Game.getObstacles().add(new Cloud(Arts.CLOUD2, j,i));
-                        else{
-                            Game.getObstacles().add(new Cloud(Arts.CLOUD3, j,i));
+                    case 500, 501, 502, 503, 504, 505, 506, 507, 508:{
+                        if(i>=Menu.frameHeight)
+                        {
+                            if(randNum == 500 || randNum == 501 || randNum == 506)
+                                Game.getObstacles().add(new Cloud(Arts.CLOUD1, j,i));
+                            else if(randNum == 502 || randNum == 503 || randNum == 507)
+                                Game.getObstacles().add(new Cloud(Arts.CLOUD2, j,i));
+                            else{
+                                Game.getObstacles().add(new Cloud(Arts.CLOUD3, j,i));
+                            }
                         }
                         temp+=' ';
-                        continue;
+                        break;
                     }
-                    case 700,701:{
-                        int r = rand.nextInt(4);
-                        if(r==0){
-                            Game.getObstacles().add(new Plane(Arts.PLANE, j, i, rand.nextFloat(1)-1, 0.35f));
-                        }else if(r==1){
-                            Game.getObstacles().add(new Plane(Arts.HELICOPTER, j, i, rand.nextFloat(1), 0.25f));
-                        }else if(r==2){
-                            Game.getObstacles().add(new Plane(Arts.FAST_PLANE, j, i, rand.nextFloat(1), 0.5f));
-                        }else{
-                            Game.getObstacles().add(new Plane(Arts.AEROSLAT, j, i, rand.nextFloat(1)-1, 0.2f));
+                    case 700, 701, 702, 703, 704:{
+                        if(i>=Menu.frameHeight)
+                        {
+                            int r = rand.nextInt(4);
+                            if(r==0){
+                                Game.getObstacles().add(new Plane(Arts.PLANE, j, i, rand.nextFloat(1)-1, 0.35f));
+                            }else if(r==1){
+                                Game.getObstacles().add(new Plane(Arts.HELICOPTER, j, i, rand.nextFloat(1), 0.25f));
+                            }else if(r==2){
+                                Game.getObstacles().add(new Plane(Arts.FAST_PLANE, j, i, rand.nextFloat(1), 0.5f));
+                            }else{
+                                Game.getObstacles().add(new Plane(Arts.AEROSLAT, j, i, rand.nextFloat(1)-1, 0.2f));
+                            }
                         }
                         temp+=' ';
-                        continue;
+                        break;
                     }
-                    case 600, 601:{
-                        Game.getObstacles().add(new Ufo(j,i, rand.nextFloat(1)-0.5f, 0.7f));
+                    case 600, 601, 602, 603:{
+                        if(i>=Menu.frameHeight)
+                        {
+                            Game.getObstacles().add(new Ufo(j,i, rand.nextFloat(1)-0.5f, 0.7f));
+                        }
                         temp+=' ';
-                        continue;
+                        break;
                     }
-                    case 1600, 9000, 900:{
-                        Game.getObstacles().add(new Bird(rand.nextFloat(2)-1, j, i));
+                    case 1600, 9000, 900, 901, 902, 903:{
+                        if(i>=Menu.frameHeight)
+                        {
+                            Game.getObstacles().add(new Bird(rand.nextFloat(2)-1, j, i));
+                        }
                         temp+=' ';
-                        continue;
+                        break;
                     }
                     default:{
-                        if(randNum<50){
+                        if(randNum<70){
                             temp+='*';
                         }else
                             temp+=' ';

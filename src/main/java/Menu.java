@@ -57,25 +57,18 @@ public class Menu {
                                 Thread.sleep(3100);
                                 Rocket.newInstance();
                                 new Game(screen);
-                            case 2:
-                                new AnimatedEarth().start();
-                                Thread.sleep(3100);
-                                new Game(screen);
-                                if(!Game.gameover){
-                                    new AnimatedEarth().start();
-                                    Thread.sleep(3100);
-                                    this.paintMenu();
-                                    this.paintLogo();
-                                }else{
+                            case 2:{
+                                do{
                                     new AnimatedEarth().start();
                                     Thread.sleep(3100);
                                     new Game(screen);
-                                    new AnimatedEarth().start();
-                                    Thread.sleep(3100);
-                                    this.paintMenu();
-                                    this.paintLogo();
-                                }
+                                }while(Game.gameover);
+                                new AnimatedEarth().start();
+                                Thread.sleep(3100);
+                                this.paintMenu();
+                                this.paintLogo();
                                 break;
+                            }
                             case 4:
                                 new AnimatedEarth().start();
                                 Thread.sleep(3100);
