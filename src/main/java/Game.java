@@ -1,8 +1,5 @@
 package src.main.java;
 
-import src.main.java.obstacles.*;
-import src.main.java.pieces.Rocket;
-import src.main.resources.Arts;
 import com.googlecode.lanterna.Symbols;
 import com.googlecode.lanterna.TerminalPosition;
 import com.googlecode.lanterna.TerminalSize;
@@ -10,6 +7,9 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.screen.Screen;
+import src.main.java.obstacles.*;
+import src.main.java.pieces.Rocket;
+import src.main.resources.Arts;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,29 +17,31 @@ import java.util.Random;
 
 
 public class Game{
-    static public boolean paused = false;
-    static public boolean gameover = false;
+    static public boolean paused;
+    static public boolean gameover;
 
-    private TextColor lighterBlue = Menu.lighterBlue,
-            lightBlue = Menu.lightBlue,
-            blue  = new TextColor.RGB(50,50,255),
-            darkBlue = new TextColor.RGB(20,20,100),
-            gray = TextColor.Factory.fromString("white"),
-            white = new TextColor.RGB(255,255,255),
-            black = new TextColor.RGB(0,0,0);
+    private final TextColor gray = TextColor.Factory.fromString("white");
+    private final TextColor white = new TextColor.RGB(255,255,255);
+    private final TextColor black = new TextColor.RGB(0,0,0);
 
-    private TextGraphics tg;
-    private Screen screen;
+    private final TextGraphics tg;
+    private final Screen screen;
 
-    private String []base = Arts.BASE.art;
-    private String [][]rocketArt = {Arts.ROCKET_BASE.art, Arts.ROCKET_FAST.art};
+    private final String []base = Arts.BASE.art;
+    private final String [][]rocketArt = {Arts.ROCKET_BASE.art, Arts.ROCKET_FAST.art};
 
-    private MapGenerator mg = MapGenerator.getInstance();
-    private static ArrayList<Obstacle> obstacles = new ArrayList<>();
-    private Rocket rocket = Rocket.getInstance();
+    private final MapGenerator mg = MapGenerator.getInstance();
+    private static final ArrayList<Obstacle> obstacles = new ArrayList<>();
+    private static final ArrayList<Bullet> rocketBullets = new ArrayList<>();
+    private final ArrayList<Bullet> ufoBullets = new ArrayList<>();
+    private static int toNextBullet = 15;   //0 - has bullet
+
+    private final Rocket rocket = Rocket.getInstance();
     public static final int MAX_HEIGHT = 2000;
 
     public Game(Screen screen) throws IOException, InterruptedException {
+        gameover = false;
+        paused = false;
         this.rocket.setColumn(base[0].length()-rocketArt[0][0].length()-37);
         this.screen = screen;
         this.tg = screen.newTextGraphics();
@@ -48,13 +50,11 @@ public class Game{
         this.screen.clear();
         this.printBase(0);
         this.printRocket(Arts.ROCKET_BASE, this.rocket.getColumn());
+        screen.refresh();
         while(!gameover) {
             KeyStroke key = screen.readInput();
             switch (key.getKeyType()) {
-                case ArrowUp -> {
-                    this.start();
-                    break;
-                }
+                case ArrowUp -> this.start();
                 case Tab -> {
                     this.shop();
                     this.tg.setBackgroundColor(black);
@@ -62,7 +62,6 @@ public class Game{
                     this.screen.clear();
                     this.printBase(0);
                     this.printRocket(Arts.ROCKET_BASE, this.rocket.getColumn());
-                    break;
                 }
                 case Escape -> {
                     return;
@@ -92,9 +91,48 @@ public class Game{
         screen.refresh();
     }
 
-    private void printMap() throws IOException {
+    private void printBullets(){
+            for (Bullet b : rocketBullets) {
+                b.setX(b.getX() - 2);
+            }
+            for (int i = 0; i < rocketBullets.size(); i++) {
+                if (rocketBullets.get(i).getY() < 0) {
+                    rocketBullets.remove(i);
+                    i--;
+                }
+            }
+        for (Bullet b : ufoBullets) {
+            b.setX(b.getX() + 2);
+        }
+        for (int i = 0; i < ufoBullets.size(); i++) {
+            if (ufoBullets.get(i).getX() > Menu.frameHeight || ufoBullets.get(i).isToRemove()) {
+                ufoBullets.remove(i);
+                i--;
+            }
+        }for (int i = 0; i < rocketBullets.size(); i++) {
+            if (rocketBullets.get(i).getX() < 0 || rocketBullets.get(i).isToRemove()) {
+                rocketBullets.remove(i);
+                i--;
+            }
+        }
+        for (Bullet b : rocketBullets) {
+            tg.setCharacter(b.getY(), b.getX(), b.getArt());
+        }for (Bullet b : ufoBullets) {
+            if(b.getY()>=rocket.getColumn() &&
+                    b.getY()<=rocket.getColumn()+Arts.ROCKET_FAST.art[0].length() &&
+                    b.getX()>Menu.frameHeight-Arts.ROCKET_FAST.art.length-2 &&
+                    b.getX()<Menu.frameHeight-2)
+            {
+                    b.setToRemove(true);
+                    rocket.setHealthStatus(rocket.getHealthStatus()-0.12f + 0.01f*(float)rocket.getArmor());
+            }
+            tg.setCharacter(b.getY(), b.getX(), b.getArt());
+        }
+    }
+
+    private void printMap() {
         int j=Menu.frameHeight-1;
-        for(String str: mg.getFrame(tg)){
+        for(String str: mg.getFrame()){
             tg.putString(0,j,str);
             j--;
         }
@@ -107,39 +145,60 @@ public class Game{
                     o.setY(o.getY()-n);
                 }
                 if (o instanceof Bird) {
-                    tg.putString(o.getX(), o.getY(), Arts.BIRD.art[0]);
-                } else if (o instanceof Cloud) {
-                    Cloud c = (Cloud) o;
+                    o.setX(o.getX()+o.getMoving());
+                    tg.putString((int)o.getX(), o.getY(), Arts.BIRD.art[0]);
+                } else if (o instanceof Cloud c) {
                     for (int i = c.getArt().art.length-1; i>=0; i--)
-                        tg.putString(c.getX(), c.getY()+i, c.getArt().art[i]);
-                } else if (o instanceof Plane) {
-                    Plane c = (Plane) o;
+                        tg.putString((int)c.getX(), c.getY()+i, c.getArt().art[i]);
+                } else if (o instanceof Plane c) {
+                    o.setX(o.getX()+o.getMoving());
                     for (int i = c.getArt().art.length-1; i>=0; i--)
-                        tg.putString(c.getX(), c.getY()+i, c.getArt().art[i]);
-                } else if (o instanceof Ufo) {
-                    Ufo u = (Ufo) o;
+                        tg.putString((int)c.getX(), c.getY()+i, c.getArt().art[i]);
+                } else if (o instanceof Ufo u) {
+                    o.setX(o.getX()+o.getMoving());
                     for (int i = Arts.UFO.art.length-1; i>=0; i--) {
-                        tg.putString(u.getX(), u.getY()+i, Arts.UFO.art[i]);
+                        tg.putString((int)u.getX(), u.getY()+i, Arts.UFO.art[i]);
                     }
-                }//+-n idk
+                    shotUfo(o);
+                }
                 o.setY(o.getY()+1);
+                if(MapGenerator.checkColisions(rocket,o)){
+                    o.setToRemove();
+                }
             }
+            if(o.isTransparent())
+                for (Bullet b : rocketBullets) {
+                    if (    b.getY() >= o.getX() &&
+                            b.getY() <= o.getX() + o.getArt().art[0].length() &&
+                            b.getX() >= o.getY() &&
+                            b.getX() <= o.getY() + o.getArt().art.length) {
+                        b.setToRemove(true);
+                        o.setHealthPoints(o.getHealthPoints()-rocket.getFirepower());
+                        if(o.getHealthPoints() == 0){
+                            o.setToRemove();
+                            if(o instanceof Ufo){
+                                rocket.setAccountBalance(rocket.getAccountBalance()+100);
+                            }if(o instanceof Plane){
+                                rocket.setAccountBalance(rocket.getAccountBalance()+20);
+                            }
+                        }
+
+                    }
+                }
             if(o.getX()>Menu.frameWidth || o.getX()<0 || (o.getY()>Menu.frameHeight && o.isENED())){
                 o.setToRemove();
             }
+
         }
         for(int m=0; m<obstacles.size(); m++){
             if(obstacles.get(m).isToRemove()){
                 obstacles.remove(m);
                 m--;
-            }else{
-                break;
             }
         }
-        screen.refresh();
     }
 
-    private void printBase(int v) throws IOException {
+    private void printBase(int v) {
         int i = Menu.frameHeight-base.length+v;
         for (String s: base) {
             this.tg.putString(0,i,s);
@@ -151,36 +210,62 @@ public class Game{
             this.tg.putString(0,j,sky[n]);
             n--;
         }
-        screen.refresh();
     }
 
     private void start() throws IOException, InterruptedException {
         gameover = false;
         paused = false;
         mg.newMap();
-        new MoveHadler(screen, rocket).start();
+        MoveHadler mh = new MoveHadler(screen, rocket);
+        mh.start();
         int v=0;
         while(!gameover) {
             if(!paused) {
                 printRocket(Arts.ROCKET_FAST, this.rocket.getColumn());
-                Thread.sleep(150);
+                Thread.sleep(175);
                 if (v < base.length) {
                     printBase(v);
                 } else {
                     printMap();
                 }
                 this.printStatus(v);
+                this.printBullets();
                 this.rocket.setHeight((float) v / (float) MAX_HEIGHT);
-                this.rocket.setOilStatus((float) (this.rocket.getOilStatus() - 0.005));
+                this.rocket.setOilStatus((float) (this.rocket.getOilStatus() - 0.005/rocket.getTankCapacity()));
                 v++;
+                screen.refresh();
+                if(rocket.getHealthStatus()<=0 || rocket.getOilStatus()<=0 || v == MAX_HEIGHT){
+                    gameover=true;
+                }
+                if(Game.getToNextBullet()>=0)
+                    Game.setToNextBullet(Game.getToNextBullet()- rocket.getRateOfFire());
             }else{
+                mh.setFlag();
                 this.pause();
-                new MoveHadler(screen, rocket).start();
+                mh = new MoveHadler(screen, rocket);
+                mh.start();
             }
         }
+        mh.setFlag();
+        if(v==MAX_HEIGHT){
+            Rocket.newInstance();
+        }
+        int points = 0;
+        if(v > rocket.getRecord()){
+            points+=rocket.getRecord()/2;
+            points+=v-rocket.getRecord();
+            rocket.setRecord(v);
+        }else{
+            points+=v/2;
+        }
+        rocket.setAccountBalance(rocket.getAccountBalance() + points);
+        rocket.setHeight(0);
+        rocket.setOilStatus(1);
+        rocket.setHealthStatus(1);
+        rocket.setSpeed(0);
     }
 
-    private void pause() throws IOException, InterruptedException {
+    private void pause() throws IOException {
         tg.setBackgroundColor(white);
         tg.setForegroundColor(black);
         TerminalSize ts = new TerminalSize(2*Menu.frameWidthMenu, Menu.frameWidthMenu);
@@ -188,7 +273,7 @@ public class Game{
         tg.fillRectangle(tp, ts, ' ');
         Menu.paintBorder(tg, tp, ts);
         int numOption = 0;
-        String []options = new String []{"Wznów", "Zapisz", "Menu głowne"};
+        String []options = new String []{"Wznów", "Restart"};
         screen.refresh();
         while(true){
             Menu.paintMenuOptions(tg, options, numOption, Menu.frameWidthMenu,
@@ -201,24 +286,17 @@ public class Game{
                     paused = false;
                     return;
                 }
-                case ArrowUp -> {
-                    numOption--;
-                }
-                case ArrowDown -> {
-                    numOption++;
-                }
+                case ArrowUp -> numOption--;
+                case ArrowDown -> numOption++;
                 case Enter -> {
-                    switch (numOption){
-                        case 0:{
+                    switch (numOption) {
+                        case 0 -> {
                             tg.setBackgroundColor(black);
                             tg.setForegroundColor(white);
                             paused = false;
                             return;
                         }
-                        case 1:
-//                            save()
-                            break;
-                        case 2:{
+                        case 1 -> {
                             gameover = true;
                             return;
                         }
@@ -232,6 +310,13 @@ public class Game{
             }
         }
     }
+    public static int getToNextBullet(){
+        return toNextBullet;
+    }
+
+    public static void setToNextBullet(int s){
+        Game.toNextBullet=s;
+    }
 
     private void shop() throws IOException {
         TerminalPosition tp = new TerminalPosition(Menu.frameWidth-Menu.frameWidthMenu, 0);
@@ -239,55 +324,68 @@ public class Game{
         tg.drawRectangle(tp, ts, ' ');
         Menu.paintBorder(tg, tp, ts);
         int numOption = 0;
-        String shopOpts[] = {"Bak paliwa", "Siła ognia", "Pancerz", "Szybkostrzelność", "Zestaw naprawczy"};
+        String[] shopOpts = {"Bak paliwa", "Siła ognia", "Pancerz", "Szybkostrzelność"};
         while(true){
-            Menu.paintMenuOptions(tg, shopOpts, numOption, 2*Menu.frameHeight/3, 0, (Menu.frameWidth-Menu.frameWidthMenu)/2,  black, gray);
-            for(int j = 0; j< rocket.getTankCapacity(); j++){
-                tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 1 + j,
-                        5), Symbols.BLOCK_DENSE);       //hardcoding
+            Menu.paintMenuOptions(tg, shopOpts, numOption, Menu.frameHeight, -2, (Menu.frameWidth-Menu.frameWidthMenu)/2,  black, gray);
+            tg.setForegroundColor(white);
+            tg.setBackgroundColor(black);
+            for(int n=1; n<=shopOpts.length; n++)
+                for(int j=0; j<10; j++){
+                    tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 5 + j,
+                            n*Menu.frameHeight/5), Symbols.BLOCK_MIDDLE);
             }
+            for(int j = 0; j< rocket.getTankCapacity(); j++){
+                tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 5 + j,
+                        Menu.frameHeight/5), Symbols.BLOCK_DENSE);
+            }
+            for(int j = 0; j< rocket.getFirepower(); j++){
+                tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 5 + j,
+                        2*Menu.frameHeight/5), Symbols.BLOCK_DENSE);
+            }
+            for(int j = 0; j< rocket.getArmor(); j++){
+                tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 5 + j,
+                        3*Menu.frameHeight/5), Symbols.BLOCK_DENSE);
+            }
+            for(int j = 0; j< rocket.getRateOfFire(); j++){
+                tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 5 + j,
+                        4*Menu.frameHeight/5), Symbols.BLOCK_DENSE);
+            }
+            String tmp = " ".repeat(Math.max(0, String.valueOf(rocket.getAccountBalance()).length() + 3));
+            tg.putString(new TerminalPosition((Menu.frameWidth - Menu.frameWidthMenu/2 - String.valueOf(rocket.getAccountBalance()).length()/3+2),
+                    (Menu.frameHeight- 2)), tmp);
+            tg.putString(new TerminalPosition((Menu.frameWidth - Menu.frameWidthMenu/2 - String.valueOf(rocket.getAccountBalance()).length()/3+3),
+                    (Menu.frameHeight- 2)), rocket.getAccountBalance() +"$");
             screen.refresh();
             KeyStroke ks = screen.readInput();
             switch (ks.getKeyType()){
-                case ArrowDown -> {
-                    numOption++;
-                }
-                case ArrowUp -> {
-                    numOption--;
-                }
+                case ArrowDown -> numOption++;
+                case ArrowUp -> numOption--;
                 case Tab -> {
                     return;
                 }
                 case Enter -> {
-                    switch (numOption){
-                        case 0:{    //paliwo
-                            rocket.plusOneTankCapacity();
-                        }
-                        case 1:{    //siła ognia
-                            rocket.plusOneFirepower();
-                        }
-                        case 2:{    //pancerz
-                            rocket.plusOneArmor();
-                        }
-                        case 3: {   //szybkostrzelnosc
-                            rocket.plusOneRateOfFire();
-                        }
-                        case 4: {   //zestaw naprawczy
-                            rocket.plusOneRepairKitEfficacy();
-                        }
+                    switch (numOption) {
+                        case 0 -> //paliwo
+                                rocket.plusOneTankCapacity();
+                        case 1 -> //siła ognia
+                                rocket.plusOneFirepower();
+                        case 2 -> //pancerz
+                                rocket.plusOneArmor();
+                        case 3 -> //szybkostrzelnosc
+                                rocket.plusOneRateOfFire();
                     }
                 }
             }
             if(numOption<0){
                 numOption = shopOpts.length-1;
-            }else if(numOption>=shopOpts.length){
-                numOption=0;
+            }else if(numOption >= shopOpts.length){
+                numOption = 0;
             }
         }
     }
 
     private void printStatus(int v){
-        String[] stats={"Fuel", "Damage", "Height", "Speed"};
+        String[] stats={"Fuel", "Health", "Height", "Speed"};
         tg.setBackgroundColor(white);
         tg.setForegroundColor(black);
         tg.fillRectangle(new TerminalPosition(Menu.frameWidth-Menu.frameWidthMenu, Menu.frameHeight-Menu.frameWidthMenu/2),
@@ -306,6 +404,9 @@ public class Game{
             tg.putString(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu+1,
                     Menu.frameHeight- (Menu.frameWidthMenu/2 * (i + 1) / (stats.length + 1))-1), stats[i]);
         }
+
+        tg.putString(new TerminalPosition((Menu.frameWidth - Menu.frameWidthMenu/2 - String.valueOf(rocket.getAccountBalance()).length()/3+2),
+                (Menu.frameHeight- Menu.frameWidthMenu/2 + 1)), "Account");
         tg.setBackgroundColor(black);
         tg.setForegroundColor(white);
 
@@ -320,10 +421,13 @@ public class Game{
         int fuel = (int) ((rocket.getOilStatus())*(Menu.frameWidthMenu-2));
         for(int j=0 ; j<fuel; j++){
             tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 1 + j,
-                    Menu.frameHeight- (Menu.frameWidthMenu/2 * 1 / (stats.length + 1))) , Symbols.BLOCK_DENSE);
+                    Menu.frameHeight- (Menu.frameWidthMenu / 2 / (stats.length + 1))) , Symbols.BLOCK_DENSE);
         }
 
-        int damages = (int) ((rocket.getDamages())*(Menu.frameWidthMenu-2));
+        tg.putString(new TerminalPosition((Menu.frameWidth - Menu.frameWidthMenu/2 - String.valueOf(rocket.getAccountBalance()).length()/3+2),
+                (Menu.frameHeight- Menu.frameWidthMenu/2 + 2)), rocket.getAccountBalance() +"$");
+
+        int damages = (int) ((rocket.getHealthStatus())*(Menu.frameWidthMenu-2));
         for(int j=0 ; j<damages; j++){
             tg.setCharacter(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 1 + j,
                     Menu.frameHeight- (Menu.frameWidthMenu/2 * 2 / (stats.length + 1))) , Symbols.BLOCK_DENSE);
@@ -342,20 +446,34 @@ public class Game{
             rocket.setSpeed(rand.nextInt(3)+115);
         }
         tg.putString(new TerminalPosition(Menu.frameWidth - Menu.frameWidthMenu + 1,
-                    Menu.frameHeight- (Menu.frameWidthMenu/2 * stats.length / (stats.length + 1))) , String.valueOf(rocket.getSpeed() + "m/s"));
+                    Menu.frameHeight- (Menu.frameWidthMenu/2 * stats.length / (stats.length + 1))) , rocket.getSpeed() + "m/s");
 
     }
     public static ArrayList<Obstacle> getObstacles() {
         return obstacles;
     }
+
+    public static void shotRocket(Rocket rocket){
+        rocketBullets.add(new Bullet(Menu.frameHeight - Arts.ROCKET_FAST.art.length - 2,
+                rocket.getColumn()+Arts.ROCKET_FAST.art[0].length()/2));
+    }
+
+    private void shotUfo(Obstacle o){
+        Random rand = new Random();
+        if (rand.nextInt(3) == 0) {
+            this.ufoBullets.add(new Bullet(o.getY() + o.getArt().art.length / 2, (int) o.getX() + o.getArt().art[0].length() / 2));
+        }
+    }
 }
 
 class MoveHadler extends Thread{
-    private Screen screen;
-    private Rocket rocket;
+    private final Screen screen;
+    private final Rocket rocket;
+    private boolean flag;
     public MoveHadler(Screen screen, Rocket rocket){
         this.screen = screen;
         this.rocket = rocket;
+        this.flag = false;
         setDaemon(true);
     }
     @Override
@@ -365,21 +483,64 @@ class MoveHadler extends Thread{
                 KeyStroke key = screen.readInput();
                 switch (key.getKeyType()) {
                     case ArrowLeft -> {
-                        rocket.setColumn(rocket.getColumn() - 1);
-                        break;
+                        if(rocket.getColumn()>=0)
+                            rocket.setColumn(rocket.getColumn() - 1);
                     }
                     case ArrowRight -> {
-                        rocket.setColumn(rocket.getColumn() + 1);
-                        break;
+                            if(rocket.getColumn() < Menu.frameWidth-Menu.frameWidthMenu*1.5+1)
+                            rocket.setColumn(rocket.getColumn() + 1);
                     }
-                    case Escape -> {
-                        Game.paused = true;
-                        break;
+                    case ArrowUp -> {
+                        if(Game.getToNextBullet()<=0){
+                            Game.shotRocket(rocket);
+                            Game.setToNextBullet(15);
+                        }
                     }
+                    case Escape -> Game.paused = true;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            if(flag){
+                break;
+            }
         }
+    }
+    public void setFlag(){
+        this.flag = true;
+    }
+}
+
+class Bullet{
+    private int x;
+    private final int y;
+    private boolean toRemove = false;
+    public Bullet(int x, int y){
+        this.x = x;
+        this.y = y;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public char getArt() {
+        return '|';
+    }
+
+    public boolean isToRemove() {
+        return toRemove;
+    }
+
+    public void setToRemove(boolean toRemove) {
+        this.toRemove = toRemove;
     }
 }

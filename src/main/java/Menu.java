@@ -1,5 +1,6 @@
 package src.main.java;
 
+import src.main.java.pieces.Rocket;
 import src.main.resources.Arts;
 import com.googlecode.lanterna.*;
 import com.googlecode.lanterna.graphics.TextGraphics;
@@ -26,13 +27,13 @@ public class Menu {
     private static DefaultTerminalFactory terminal;
     private static Screen screen;
 
-    private TextGraphics tg;
+    private final TextGraphics tg;
 
 
     public Menu(boolean options) throws IOException {
         screen.setCursorPosition(null);
         this.tg = screen.newTextGraphics();
-        String []menuOptions = {"", "", "Start", "Opcje", "Wyjście"};
+        String []menuOptions = {"", "", "Start/Kontynuuj", "Nowa Gra", "Opcje", "Wyjście"};
         int numOption = 2;
         this.paintMenu();
         this.paintLogo();
@@ -44,29 +45,41 @@ public class Menu {
                     this.paintMenu();
                     this.paintLogo();
                 }
-                this.paintMenuOptions(tg, menuOptions, numOption, Menu.frameHeight,0, 0,lighterBlue, lightBlue);
+                paintMenuOptions(tg, menuOptions, numOption, Menu.frameHeight,0, 0,lighterBlue, lightBlue);
                 KeyStroke key = screen.readInput();
                 switch (key.getKeyType()){
                     case ArrowUp -> numOption--;
                     case ArrowDown -> numOption++;
                     case Enter -> {
                         switch (numOption){
-                            case 2:
-                                new AnimatedEarth().start();
-                                Thread.sleep(3100);
-                                new Game(screen);
-                                this.paintMenu();
-                                this.paintLogo();
-                                break;
                             case 3:
                                 new AnimatedEarth().start();
                                 Thread.sleep(3100);
-                                this.options();
+                                Rocket.newInstance();
+                                new Game(screen);
+                            case 2:{
+                                do{
+                                    new AnimatedEarth().start();
+                                    Thread.sleep(3100);
+                                    new Game(screen);
+                                }while(Game.gameover);
+                                new AnimatedEarth().start();
+                                Thread.sleep(3100);
                                 this.paintMenu();
-                                this.paintMenuOptions(tg, menuOptions, numOption, Menu.frameHeight,0, 0,lighterBlue, lightBlue);
                                 this.paintLogo();
                                 break;
+                            }
                             case 4:
+                                new AnimatedEarth().start();
+                                Thread.sleep(3100);
+                                this.options();
+                                new AnimatedEarth().start();
+                                Thread.sleep(3100);
+                                this.paintMenu();
+                                paintMenuOptions(tg, menuOptions, numOption, Menu.frameHeight,0, 0,lighterBlue, lightBlue);
+                                this.paintLogo();
+                                break;
+                            case 5:
                                 System.exit(0);
                                 break;
                         }
@@ -77,10 +90,7 @@ public class Menu {
                 }else if(numOption >= menuOptions.length){
                     numOption = 2;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(0);
-            } catch (InterruptedException e){
+            } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
                 System.exit(0);
             }
@@ -88,7 +98,7 @@ public class Menu {
     }
 
     private void options() throws IOException {
-        String []menuOptions = {"Wielkość czcionki: \""+Symbols.ARROW_LEFT+"\" lub \""+Symbols.ARROW_RIGHT+"\"", "God Mode", "Powrót"};
+        String []menuOptions = {"Wielkość czcionki: \""+Symbols.ARROW_LEFT+"\" lub \""+Symbols.ARROW_RIGHT+"\"", "Powrót"};
         int numOption = 0;
         this.paintMenu();
         while(true){
@@ -128,8 +138,7 @@ public class Menu {
                                 }
                             }
                         }
-                        case 1: break;
-                        case 2: return;
+                        case 1: return;
                     }
                 }
             }
