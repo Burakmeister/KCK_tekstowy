@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Rocket implements Serializable {
+public class Rocket{
     final private static Rocket rocket = new Rocket();
 
     private int accountBalance = 0;
@@ -12,7 +12,7 @@ public class Rocket implements Serializable {
     private List<Part> parts = new ArrayList<>();
     private int column = 0;
 
-    private int speed = 1;
+    private int speed = 0;
     private float oilStatus = 1;
     private float height = 0;
     private float healthStatus = 1;
@@ -71,31 +71,31 @@ public class Rocket implements Serializable {
         this.column = column;
     }
     public void plusOneTankCapacity(){
-        if(getAccountBalance()>=this.tankCapacity*100 && this.tankCapacity<18){
+        if(getAccountBalance()>=this.tankCapacity*100 && this.tankCapacity<10){
             setAccountBalance(getAccountBalance()-this.tankCapacity*100);
             this.tankCapacity++;
         }
     }
     public void plusOneFirepower(){
-        if(getAccountBalance()>=this.firepower*100 && this.firepower<18){
+        if(getAccountBalance()>=this.firepower*100 && this.firepower<10){
             setAccountBalance(getAccountBalance()-this.firepower*100);
             this.firepower++;
         }
     }
     public void plusOneArmor(){
-        if(getAccountBalance()>=this.armor*100 && this.armor<18){
+        if(getAccountBalance()>=this.armor*100 && this.armor<10){
             setAccountBalance(getAccountBalance()-this.armor*100);
             this.armor++;
         }
     }
     public void plusOneRateOfFire(){
-        if(getAccountBalance()>=this.rateOfFire*100 && this.rateOfFire<18){
+        if(getAccountBalance()>=this.rateOfFire*100 && this.rateOfFire<10){
             setAccountBalance(getAccountBalance()-this.rateOfFire*100);
             this.rateOfFire++;
         }
     }
     public void plusOneRepairKitEfficacy(){
-        if(getAccountBalance()>=this.repairKitEfficacy*100 && this.repairKitEfficacy<18){
+        if(getAccountBalance()>=this.repairKitEfficacy*100 && this.repairKitEfficacy<10){
             setAccountBalance(getAccountBalance()-this.repairKitEfficacy*100);
             this.repairKitEfficacy++;
         }

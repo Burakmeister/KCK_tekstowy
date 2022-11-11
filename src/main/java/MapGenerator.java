@@ -33,7 +33,7 @@ public class MapGenerator {
         {
             temp = "";
             for(int j=0 ; j<Menu.frameWidth; j++){
-                int randNum = rand.nextInt(4000);
+                int randNum = rand.nextInt(6000);
                 switch (randNum){
                     case 500, 501, 502:{
                         if(randNum == 500)
@@ -60,7 +60,7 @@ public class MapGenerator {
                         temp+=' ';
                         continue;
                     }
-                    case 600:{
+                    case 600, 601:{
                         Game.getObstacles().add(new Ufo(j,i, rand.nextFloat(1)-0.5f, 0.5f));
                         temp+=' ';
                         continue;
@@ -71,7 +71,7 @@ public class MapGenerator {
                         continue;
                     }
                     default:{
-                        if(randNum<30){
+                        if(randNum<45){
                             temp+='*';
                         }else
                             temp+=' ';
@@ -106,6 +106,22 @@ public class MapGenerator {
         this.n = n;
     }
 
-    public static void checkColisions(Rocket rocket){
+    public static boolean checkColisions(Rocket rocket, Obstacle obstacle){
+        if(     !obstacle.isTransparent() &&
+                ((rocket.getColumn()<(int)obstacle.getX()+obstacle.getArt().art[0].length()
+                && rocket.getColumn()+Arts.ROCKET_FAST.art[0].length()> (int)obstacle.getX())
+                ||
+                (rocket.getColumn()>(int)obstacle.getX()+obstacle.getArt().art[0].length()
+                && rocket.getColumn()+Arts.ROCKET_FAST.art[0].length()<(int)obstacle.getX())
+                ||
+                (rocket.getColumn() >= (int)obstacle.getX()
+                        && rocket.getColumn()+Arts.ROCKET_FAST.art[0].length() <= (int)obstacle.getX()+obstacle.getArt().art[0].length()))
+                &&
+                obstacle.getY() > Menu.frameHeight-Arts.ROCKET_FAST.art.length-obstacle.getArt().art.length
+                ){
+            obstacle.collisionEffect(rocket);
+            return true;
+        }
+        return false;
     }
 }

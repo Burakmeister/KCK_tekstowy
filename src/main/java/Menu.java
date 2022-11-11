@@ -88,7 +88,7 @@ public class Menu {
     }
 
     private void options() throws IOException {
-        String []menuOptions = {"Wielkość czcionki: \""+Symbols.ARROW_LEFT+"\" lub \""+Symbols.ARROW_RIGHT+"\"", "God Mode", "Powrót"};
+        String []menuOptions = {"Wielkość czcionki: \""+Symbols.ARROW_LEFT+"\" lub \""+Symbols.ARROW_RIGHT+"\"", "Powrót"};
         int numOption = 0;
         this.paintMenu();
         while(true){
@@ -128,8 +128,7 @@ public class Menu {
                                 }
                             }
                         }
-                        case 1: break;
-                        case 2: return;
+                        case 1: return;
                     }
                 }
             }

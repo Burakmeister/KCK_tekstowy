@@ -4,9 +4,8 @@ import src.main.java.pieces.Rocket;
 import src.main.resources.Arts;
 
 public class Cloud extends Obstacle{
-    Arts art;
     public Cloud(Arts art, int x, int y){
-        super(art.art[0].length(), art.art.length, x, y, 0, true, false);
+        super(art.art[0].length(), art.art.length, x, y, 0, true, false,1, art);
         this.art = art;
     }
 
