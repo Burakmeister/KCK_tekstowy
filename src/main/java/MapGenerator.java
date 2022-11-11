@@ -33,7 +33,7 @@ public class MapGenerator {
         {
             temp = "";
             for(int j=0 ; j<Menu.frameWidth; j++){
-                int randNum = rand.nextInt(6000);
+                int randNum = rand.nextInt(7000);
                 switch (randNum){
                     case 500, 501, 502:{
                         if(randNum == 500)
@@ -49,19 +49,19 @@ public class MapGenerator {
                     case 700,701:{
                         int r = rand.nextInt(4);
                         if(r==0){
-                            Game.getObstacles().add(new Plane(Arts.PLANE, j, i, rand.nextFloat(1)-1, 0.2f));
+                            Game.getObstacles().add(new Plane(Arts.PLANE, j, i, rand.nextFloat(1)-1, 0.35f));
                         }else if(r==1){
-                            Game.getObstacles().add(new Plane(Arts.HELICOPTER, j, i, rand.nextFloat(1), 0.15f));
+                            Game.getObstacles().add(new Plane(Arts.HELICOPTER, j, i, rand.nextFloat(1), 0.25f));
                         }else if(r==2){
-                            Game.getObstacles().add(new Plane(Arts.FAST_PLANE, j, i, rand.nextFloat(1), 0.3f));
+                            Game.getObstacles().add(new Plane(Arts.FAST_PLANE, j, i, rand.nextFloat(1), 0.5f));
                         }else{
-                            Game.getObstacles().add(new Plane(Arts.AEROSLAT, j, i, rand.nextFloat(1)-1, 0.1f));
+                            Game.getObstacles().add(new Plane(Arts.AEROSLAT, j, i, rand.nextFloat(1)-1, 0.2f));
                         }
                         temp+=' ';
                         continue;
                     }
                     case 600, 601:{
-                        Game.getObstacles().add(new Ufo(j,i, rand.nextFloat(1)-0.5f, 0.5f));
+                        Game.getObstacles().add(new Ufo(j,i, rand.nextFloat(1)-0.5f, 0.7f));
                         temp+=' ';
                         continue;
                     }
@@ -71,7 +71,7 @@ public class MapGenerator {
                         continue;
                     }
                     default:{
-                        if(randNum<45){
+                        if(randNum<50){
                             temp+='*';
                         }else
                             temp+=' ';

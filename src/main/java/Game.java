@@ -36,7 +36,7 @@ public class Game{
     private static ArrayList<Obstacle> obstacles = new ArrayList<>();
     private static ArrayList<Bullet> rocketBullets = new ArrayList<>();
     private ArrayList<Bullet> ufoBullets = new ArrayList<>();
-    private static int toNextBullet = 100;   //0 - has bullet
+    private static int toNextBullet = 15;   //0 - has bullet
 
     private Rocket rocket = Rocket.getInstance();
     public static final int MAX_HEIGHT = 2000;
@@ -111,12 +111,12 @@ public class Game{
             b.setX(b.getX() + 2);
         }
         for (int i = 0; i < ufoBullets.size(); i++) {
-            if (ufoBullets.get(i).getY() < 0 || ufoBullets.get(i).isToRemove()) {
+            if (ufoBullets.get(i).getX() > Menu.frameHeight || ufoBullets.get(i).isToRemove()) {
                 ufoBullets.remove(i);
                 i--;
             }
         }for (int i = 0; i < rocketBullets.size(); i++) {
-            if (rocketBullets.get(i).getY() < 0 || rocketBullets.get(i).isToRemove()) {
+            if (rocketBullets.get(i).getX() < 0 || rocketBullets.get(i).isToRemove()) {
                 rocketBullets.remove(i);
                 i--;
             }
@@ -126,10 +126,11 @@ public class Game{
         }for (Bullet b : ufoBullets) {
             if(b.getY()>=rocket.getColumn() &&
                     b.getY()<=rocket.getColumn()+Arts.ROCKET_FAST.art[0].length() &&
-                    b.getX()>Menu.frameHeight-Arts.ROCKET_FAST.art.length-2)
+                    b.getX()>Menu.frameHeight-Arts.ROCKET_FAST.art.length-2 &&
+                    b.getX()<Menu.frameHeight-2)
             {
                     b.setToRemove(true);
-                    rocket.setHealthStatus(rocket.getHealthStatus()-0.1f);
+                    rocket.setHealthStatus(rocket.getHealthStatus()-0.12f + 0.01f*(float)rocket.getArmor());
             }
             tg.setCharacter(b.getY(), b.getX(), b.getArt());
         }
@@ -224,7 +225,8 @@ public class Game{
         gameover = false;
         paused = false;
         mg.newMap();
-        new MoveHadler(screen, rocket, tg).start();
+        Thread mh = new MoveHadler(screen, rocket, tg);
+        mh.start();
         int v=0;
         while(!gameover) {
             if(!paused) {
@@ -241,15 +243,26 @@ public class Game{
                 this.rocket.setOilStatus((float) (this.rocket.getOilStatus() - 0.005/rocket.getTankCapacity()));
                 v++;
                 screen.refresh();
-                if(rocket.getHealthStatus()<=0 || rocket.getOilStatus()<=0){
+                if(rocket.getHealthStatus()<=0 || rocket.getOilStatus()<=0 || v == MAX_HEIGHT){
                     gameover=true;
                 }
+                if(Game.getToNextBullet()>=0)
+                    Game.setToNextBullet(Game.getToNextBullet()-1*rocket.getRateOfFire());
             }else{
                 this.pause();
                 new MoveHadler(screen, rocket, tg).start();
             }
         }
-        rocket.setAccountBalance(rocket.getAccountBalance()+v);
+        if(v==MAX_HEIGHT){
+            Rocket.newInstance();
+        }
+        int points = 0;
+        if(v > rocket.getRecord()){
+            points+=v;
+        }else{
+            points+=v/2;
+        }
+        rocket.setAccountBalance(rocket.getAccountBalance() + points);
         rocket.setHeight(0);
         rocket.setOilStatus(1);
         rocket.setHealthStatus(1);
@@ -498,20 +511,20 @@ class MoveHadler extends Thread{
                 KeyStroke key = screen.readInput();
                 switch (key.getKeyType()) {
                     case ArrowLeft -> {
-                        rocket.setColumn(rocket.getColumn() - 1);
+                        if(rocket.getColumn()>=0)
+                            rocket.setColumn(rocket.getColumn() - 1);
                         break;
                     }
                     case ArrowRight -> {
-                        rocket.setColumn(rocket.getColumn() + 1);
+                            if(rocket.getColumn() < Menu.frameWidth-Menu.frameWidthMenu*1.5+1)
+                            rocket.setColumn(rocket.getColumn() + 1);
                         break;
                     }
                     case ArrowUp -> {
-                        if(Game.getToNextBullet()>0){
+                        if(Game.getToNextBullet()<=0){
                             Game.shotRocket(rocket);
-                        }else{
-                            Game.setToNextBullet(Game.getToNextBullet()-1*rocket.getRateOfFire());
+                            Game.setToNextBullet(15);
                         }
-
                         break;
                     }
                     case Escape -> {
@@ -547,16 +560,8 @@ class Bullet{
         return y;
     }
 
-    public void setY(int y) {
-        this.y = y;
-    }
-
     public char getArt() {
         return art;
-    }
-
-    public void setArt(char art) {
-        this.art = art;
     }
 
     public boolean isToRemove() {

@@ -11,8 +11,9 @@ public class Bird extends Obstacle{
 
     @Override
     public void collisionEffect(Rocket rocket) {
-        float tmp = damage - (float)(rocket.getArmor())/5;
+        float tmp = damage - ((float)(rocket.getArmor()-1)/12)*damage;
         if(tmp>0)
             rocket.setHealthStatus(rocket.getHealthStatus()-damage);
+        System.out.println(tmp);
     }
 }

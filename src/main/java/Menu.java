@@ -1,5 +1,6 @@
 package src.main.java;
 
+import src.main.java.pieces.Rocket;
 import src.main.resources.Arts;
 import com.googlecode.lanterna.*;
 import com.googlecode.lanterna.graphics.TextGraphics;
@@ -32,7 +33,7 @@ public class Menu {
     public Menu(boolean options) throws IOException {
         screen.setCursorPosition(null);
         this.tg = screen.newTextGraphics();
-        String []menuOptions = {"", "", "Start", "Opcje", "Wyjście"};
+        String []menuOptions = {"", "", "Start/Kontynuuj", "Nowa Gra", "Opcje", "Wyjście"};
         int numOption = 2;
         this.paintMenu();
         this.paintLogo();
@@ -51,22 +52,41 @@ public class Menu {
                     case ArrowDown -> numOption++;
                     case Enter -> {
                         switch (numOption){
+                            case 3:
+                                new AnimatedEarth().start();
+                                Thread.sleep(3100);
+                                Rocket.newInstance();
+                                new Game(screen);
                             case 2:
                                 new AnimatedEarth().start();
                                 Thread.sleep(3100);
                                 new Game(screen);
-                                this.paintMenu();
-                                this.paintLogo();
+                                if(!Game.gameover){
+                                    new AnimatedEarth().start();
+                                    Thread.sleep(3100);
+                                    this.paintMenu();
+                                    this.paintLogo();
+                                }else{
+                                    new AnimatedEarth().start();
+                                    Thread.sleep(3100);
+                                    new Game(screen);
+                                    new AnimatedEarth().start();
+                                    Thread.sleep(3100);
+                                    this.paintMenu();
+                                    this.paintLogo();
+                                }
                                 break;
-                            case 3:
+                            case 4:
                                 new AnimatedEarth().start();
                                 Thread.sleep(3100);
                                 this.options();
+                                new AnimatedEarth().start();
+                                Thread.sleep(3100);
                                 this.paintMenu();
                                 this.paintMenuOptions(tg, menuOptions, numOption, Menu.frameHeight,0, 0,lighterBlue, lightBlue);
                                 this.paintLogo();
                                 break;
-                            case 4:
+                            case 5:
                                 System.exit(0);
                                 break;
                         }

@@ -11,7 +11,6 @@ public class Cloud extends Obstacle{
 
     @Override
     public void collisionEffect(Rocket rocket) {
-        rocket.setMapVisible(false);
     }
 
     public Arts getArt() {

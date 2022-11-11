@@ -11,7 +11,7 @@ public class Ufo extends Obstacle{
     }
     @Override
     public void collisionEffect(Rocket rocket) {
-        float tmp = damage - (float)(rocket.getArmor())/5;
+        float tmp = damage - ((float)(rocket.getArmor()-1)/12)*damage;
         if(tmp>0)
             rocket.setHealthStatus(rocket.getHealthStatus()-damage);
     }
