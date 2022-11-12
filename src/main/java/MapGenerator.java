@@ -88,7 +88,7 @@ public class MapGenerator {
 
     public String[] getFrame(){
         this.n++;
-        System.arraycopy(this.map, n, this.frame, 0, Menu.frameHeight + n - n);
+        System.arraycopy(this.map, n, this.frame, 0, Menu.frameHeight);
         return this.frame;
     }
 
