@@ -31,7 +31,7 @@ public class Game{
     private final String [][]rocketArt = {Arts.ROCKET_BASE.art, Arts.ROCKET_FAST.art};
 
     private final MapGenerator mg = MapGenerator.getInstance();
-    private static final ArrayList<Obstacle> obstacles = new ArrayList<>();
+    private static ArrayList<Obstacle> obstacles;
     private static final ArrayList<Bullet> rocketBullets = new ArrayList<>();
     private final ArrayList<Bullet> ufoBullets = new ArrayList<>();
     private static int toNextBullet = 15;   //0 - has bullet
@@ -42,6 +42,8 @@ public class Game{
     public Game(Screen screen) throws IOException, InterruptedException {
         gameover = false;
         paused = false;
+        obstacles = new ArrayList<Obstacle>();
+
         this.rocket.setColumn(base[0].length()-rocketArt[0][0].length()-37);
         this.screen = screen;
         this.tg = screen.newTextGraphics();
@@ -222,7 +224,7 @@ public class Game{
         while(!gameover) {
             if(!paused) {
                 printRocket(Arts.ROCKET_FAST, this.rocket.getColumn());
-                Thread.sleep(175);
+                Thread.sleep(125);
                 if (v < base.length) {
                     printBase(v);
                 } else {

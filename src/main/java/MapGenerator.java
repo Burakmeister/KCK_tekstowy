@@ -33,7 +33,7 @@ public class MapGenerator {
                 int randNum = rand.nextInt(10000);
                 switch (randNum) {
                     case 500, 501, 502, 503, 504, 505, 506, 507, 508 -> {
-                        if (i >= 1.5*Menu.frameHeight) {
+                        if (i <= Game.MAX_HEIGHT - Menu.frameHeight) {
                             if (randNum == 500 || randNum == 501 || randNum == 506)
                                 Game.getObstacles().add(new Cloud(Arts.CLOUD1, j, i));
                             else if (randNum == 502 || randNum == 503 || randNum == 507)
@@ -45,7 +45,7 @@ public class MapGenerator {
                         temp.append(' ');
                     }
                     case 700, 701, 702, 703, 704 -> {
-                        if (i >= 1.5*Menu.frameHeight) {
+                        if (i <= Game.MAX_HEIGHT - Menu.frameHeight) {
                             int r = rand.nextInt(4);
                             if (r == 0) {
                                 Game.getObstacles().add(new Plane(Arts.PLANE, j, i, rand.nextFloat(1) - 1, 0.35f));
@@ -60,13 +60,13 @@ public class MapGenerator {
                         temp.append(' ');
                     }
                     case 600, 601, 602, 603 -> {
-                        if (i >= 1.5*Menu.frameHeight) {
+                        if (i <= Game.MAX_HEIGHT - Menu.frameHeight) {
                             Game.getObstacles().add(new Ufo(j, i, rand.nextFloat(1) - 0.5f, 0.7f));
                         }
                         temp.append(' ');
                     }
                     case 1600, 9000, 900, 901, 902, 903 -> {
-                        if (i >= 1.5*Menu.frameHeight) {
+                        if (i <= Game.MAX_HEIGHT - Menu.frameHeight) {
                             Game.getObstacles().add(new Bird(rand.nextFloat(2) - 1, j, i));
                         }
                         temp.append(' ');
